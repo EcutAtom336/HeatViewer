@@ -1,0 +1,38 @@
+---
+BasedOnStyle: Google
+Language: Cpp
+
+###################################
+#          indent conf
+###################################
+
+UseTab: Never
+IndentWidth: 2
+TabWidth: 2
+ColumnLimit: 80
+AccessModifierOffset: -4
+NamespaceIndentation: All
+FixNamespaceComments: false
+BreakBeforeBraces: Attach
+
+###################################
+#          other styles
+###################################
+
+# 
+# for more conf, you can ref: https://clang.llvm.org/docs/ClangFormatStyleOptions.html
+#
+
+AllowShortIfStatementsOnASingleLine: true
+
+AllowShortLoopsOnASingleLine: true
+
+AllowShortBlocksOnASingleLine: true
+
+IndentCaseLabels: true
+
+SortIncludes: false
+
+AlignConsecutiveMacros: AcrossEmptyLines
+
+AlignConsecutiveAssignments: Consecutive
