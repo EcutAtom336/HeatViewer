@@ -29,6 +29,7 @@ static inline uint8_t temp_map(float_t min, float_t max, float_t temp) {
 void util_image_rgb565_zoom(const void *p_src, void *p_res,
                             const float_t zoom_ratio, const uint32_t x_ofs,
                             const uint32_t y_ofs) {
+  // 固定的图像尺寸
   const uint32_t IMG_H = 128, IMG_W = 160;
 
   if (zoom_ratio == 1.0f) {
@@ -50,7 +51,7 @@ void util_image_rgb565_zoom(const void *p_src, void *p_res,
         }
       }
   } else {
-    // 放大图像
+    // 放大图像，未实现
 #warning "uncomplete"
   }
 }
@@ -132,6 +133,7 @@ void util_image_rgb565grey_part_edge_detection(
     uint16_t window_x, uint16_t window_y) {
   const uint32_t IMG_H = 128, IMG_W = 160;
 
+  // Sobel 算子
   const int32_t SOBEL_OPERATOR_GX_3[3][3] = {
       {-1, 0, 1},
       {-2, 0, 2},
@@ -206,12 +208,12 @@ uint8_t util_image_save_rgb565_as_bmp(const void *p_frame) {
   }
 
   p_save_buf = pvPortMalloc(SAVE_BUF_SIZE);
-  // p_save_buf = save_buf;
   if (p_save_buf == NULL) {
     log_w("save buf malloc fail.");
     return -1;
   }
 
+  // 固定的 bmp 文件头
   const BmpFileHeader_t BMP_FILE_HEADER = {
       .bfType = 0x4D42,
       .bfSize =
@@ -220,6 +222,7 @@ uint8_t util_image_save_rgb565_as_bmp(const void *p_frame) {
       .bfReserved2 = 0,
       .bfOffBits   = sizeof(BmpFileHeader_t) + sizeof(BmpInfoHeader_t),
   };
+  // 固定的 bmp 信息头
   const BmpInfoHeader_t BMP_INFO_HEADER = {
       .biSize          = sizeof(BmpInfoHeader_t),
       .biWidth         = W,

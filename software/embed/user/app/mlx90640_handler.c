@@ -47,6 +47,7 @@ void mlx90640_handler() {
     // 等待信号
     // ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(1000));
 
+    // 检测同步状态
     if (!is_sync) {
       ret = MLX90640_SynchFrame(MLX90640_ADDRESS);
       if (ret) {
@@ -71,6 +72,7 @@ void mlx90640_handler() {
     MLX90640_CalculateTo(frame_raw, &mlx90640_params, emissivity, tr,
                          subpage_result);
 
+    // 损坏像素数据校正
     MLX90640_BadPixelsCorrection((&mlx90640_params)->brokenPixels,
                                  subpage_result, 1, &mlx90640_params);
     MLX90640_BadPixelsCorrection((&mlx90640_params)->outlierPixels,
@@ -80,10 +82,12 @@ void mlx90640_handler() {
     for (size_t i = subpage_num; i < 32 * 24; i += 2)
       merge_result[i] = subpage_result[i];
 
+    // 置数据可用标志
     if (frame_result_is_available != 2) { frame_result_is_available++; }
 
     xTaskDelayUntil(&tick, pdMS_TO_TICKS(225));
 
+    // 接收设置发射率请求
     freertos_ret = xQueueReceive(mlx90640_handler_queue_handle, &emissivity, 0);
   }
 }

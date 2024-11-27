@@ -62,6 +62,7 @@ static void app_code() {
 
   uint8_t tmp_str[16];
 
+  // 配置 DCI DMA
   dma_single_data_parameter_struct init_struct = {
       .periph_addr         = DCI + 0x28U,
       .periph_inc          = DMA_PERIPH_INCREASE_DISABLE,
@@ -75,12 +76,14 @@ static void app_code() {
   };
   dma_single_data_mode_init(DMA1, DMA_CH7, &init_struct);
 
+  // 使能 DCI
   dci_enable();
   dci_crop_window_config((320 - 160 + 80) / 2, (240 - 128 - 38) / 2,
                          160 * 2 - 1, 128 * 2 - 1);
   dci_crop_window_enable();
 
   while (1) {
+    // 接收按键事件
     freertos_ret = xQueueReceive(app_btn_evt_queue_handle, &btn_evt, 0);
     if (freertos_ret == pdTRUE) {
       if (btn_evt == 0) {
@@ -94,21 +97,28 @@ static void app_code() {
     }
 
     if (show_hv) {
+      // 配置 DCI 读取 OV7725 数据
       dma_single_data_mode_init(DMA1, DMA_CH7, &init_struct);
       dma_channel_enable(DMA1, DMA_CH7);
       dci_capture_enable();
 
+      // 等待 OV7725 数据读取完成
       ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
+      // 对可见光数据进行缩放，以对齐热成像数据
       util_image_rgb565_zoom(frame0, frame1, 0.7f, 24 - 10, 20);
 
       memset(frame0, 0, sizeof(frame0));
 
-      util_image_rgb565grey_part_edge_detection(frame1, frame0, 16, 20, 112, 89);
+      // 边缘检测
+      util_image_rgb565grey_part_edge_detection(frame1, frame0, 16, 20, 112,
+                                                89);
 
+      // 根据热成像传感器数据对经过边缘检测后的可见光图像进行上色
       util_image_colour(frame0, merge_result, &h_temp, &h_temp_idx, &c_temp,
                         &l_temp, &l_temp_idx);
 
+      // 显示结果
       lcd_show_rgb565_pic(0, 0, 128, 160, frame0);
 
       // 显示中心准星和高低温准星
@@ -176,6 +186,7 @@ static void app_code() {
     // 显示电池图标
     lcd_show_battery(1, 1, power_manage_get_battery_status());
 
+    // 请求刷新 LCD
     lcd_refreash_request();
 
     vTaskDelay(pdMS_TO_TICKS(show_hv ? 500 : 50));

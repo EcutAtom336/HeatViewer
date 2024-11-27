@@ -411,11 +411,14 @@ static void on_chip_hw_init() {
 static void mlx90640_init() {
   int32_t ret;
 
+  // 申请内存
   uint16_t* p_mlx90640_eeprom_data = pvPortMalloc(832 * 2);
   configASSERT(p_mlx90640_eeprom_data);
 
+  // 设置刷新率
   MLX90640_SetRefreshRate(0x33 << 1, 3);
 
+  // 读取MLX90640校正数据
   ret = MLX90640_DumpEE(0x33 << 1, p_mlx90640_eeprom_data);
 
   log_i("mlx90640 dumpee retun code: %d", ret);
@@ -424,6 +427,7 @@ static void mlx90640_init() {
     return;
   }
 
+  // 解析校正数据
   ret = MLX90640_ExtractParameters(p_mlx90640_eeprom_data, &mlx90640_params);
 
   if (ret == MLX90640_NO_ERROR)
@@ -433,8 +437,10 @@ static void mlx90640_init() {
         "mlx90640 eeprom data is corrupted, and the repair data will be "
         "loaded. This can make the sensor work normally, but it may make the "
         "data inaccurate.");
+    // 解析失败，证明传感器校正数据损坏。在此会加载正常传感器的校正数据，可以使传感器继续运行，但可能会使传感器准确性下降。
     memcpy(p_mlx90640_eeprom_data, mlx90640_eeprom_repair_data,
            sizeof(mlx90640_eeprom_repair_data));
+    // 重新解析
     ret = MLX90640_ExtractParameters(p_mlx90640_eeprom_data, &mlx90640_params);
     log_i("mlx90640 ext params retun code: %d", ret);
     if (ret != MLX90640_NO_ERROR) {
@@ -443,6 +449,7 @@ static void mlx90640_init() {
     }
   }
 
+  // 释放内存
   vPortFree(p_mlx90640_eeprom_data);
 }
 

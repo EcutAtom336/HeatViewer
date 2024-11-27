@@ -22,10 +22,12 @@
 #include <stdio.h>
 
 static void init_code() {
+  // 等待 500ms，即长按上电
   vTaskDelay(pdMS_TO_TICKS(500));
 
   int32_t ret;
 
+  // elog 初始化
   elog_init();
   elog_set_fmt(ELOG_LVL_ASSERT, ELOG_FMT_ALL);
   elog_set_fmt(ELOG_LVL_ERROR, ELOG_FMT_LVL | ELOG_FMT_TAG | ELOG_FMT_TIME);
@@ -35,8 +37,10 @@ static void init_code() {
   elog_set_fmt(ELOG_LVL_VERBOSE, ELOG_FMT_LVL | ELOG_FMT_TAG | ELOG_FMT_TIME);
   elog_start();
 
+  // 硬件初始化
   hw_init();
 
+  // 软件初始化
   sw_init();
 
   // 开机提示音
@@ -45,14 +49,16 @@ static void init_code() {
   // 显示 logo
   lcd_show_rgb565_pic(0, 0, LOGO_IMG_HEIGHT, LOGO_IMG_WIDTH,
                       (uint16_t*)LOGO_IMG);
-
+  // 请求刷新 LCD
   lcd_refreash_request();
 
   vTaskDelay(pdMS_TO_TICKS(1500));
 
+  // 应用程序初始化
   app_init();
   mlx90640_handler_init();
 
+  // 删除任务
   vTaskDelete(NULL);
 }
 
